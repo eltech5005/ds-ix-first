@@ -3,7 +3,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "(gdb) Launch",
+            "name": "(gdb) Windows - Launch and debug",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/main.run",
@@ -21,6 +21,27 @@
                     "ignoreFailures": true
                 }
             ]
+        },
+        {
+            "name": "(gdb) Linux - Launch and debug",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/main.run",
+            "args": [],
+            "miDebuggerPath": "gdb",
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": true,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
         }
+
     ]
 }

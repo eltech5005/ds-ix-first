@@ -10,6 +10,7 @@
                 "-Wall",
                 "-std=c++0x",
                 "-static",
+                "-pthread",
                 "${workspaceRoot}/main.cpp",
                 "-o",
                 "${workspaceRoot}/main.run"
@@ -31,6 +32,7 @@
                 "-Wall",
                 "-std=c++0x",
                 "-g",
+                "-pthread",
                 "${workspaceRoot}/main.cpp",
                 "-o",
                 "${workspaceRoot}/main.run"
@@ -56,20 +58,6 @@
             ],
             "group": "build",
             "problemMatcher": []
-        },
-        {
-            "type": "shell",
-            "label": "g++.exe build active file",
-            "command": "C:\\TDM-GCC-32\\bin\\g++.exe",
-            "args": [
-                "-g",
-                "${file}",
-                "-o",
-                "${fileDirname}\\${fileBasenameNoExtension}.exe"
-            ],
-            "options": {
-                "cwd": "C:\\TDM-GCC-32\\bin"
-            }
         }
     ]
 }
