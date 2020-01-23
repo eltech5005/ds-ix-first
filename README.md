@@ -1,5 +1,12 @@
-# Hello world project
+# ЛЭТИ - Распределённые системы - Лабораторная работа 1
 
-This is the famous "Hello world" project for Microsoft Visual Studio Code.
+Вариант 2 - Алгоритм быстрой сортировки
 
-In fact, the goal is to save launch.json and tasks.json for C++ projects (gcc).
+Реализация многопоточного рекурсивного алгоритма быстрой сортировки с ограничением количества потоков до числа логических процессоров.
+
+Программа предполагается для сборки и запуска на Linux.
+
+Сборка: 
+```
+g++ -O2 -Wall -std=c++0x -static -pthread ./main.cpp -o ./main.run
+```
