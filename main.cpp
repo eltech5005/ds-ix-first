@@ -4,117 +4,94 @@
 #include <pthread.h>
 #include <unistd.h>
 
-const int n = 30;
-int a[n]; //n - количество элементов
+// Array to sort
+const int n = 100;
+int a[n];
 
-const int max_threads = sysconf(_SC_NPROCESSORS_ONLN);
-int thread_counter = 0;
+const int max_threads = sysconf(_SC_NPROCESSORS_ONLN); // Spawn max threads as much as logicals CPUs on host
+int thread_counter = 0; // Global threads counter
+pthread_mutex_t lock; // Mutex to make threads counter thread-safe
 
-pthread_mutex_t lock;
-
-struct qs_args
-{
+// Struct to pass arguments to threads
+struct qs_args {
     int *s_arr;
     int first;
     int last;
 };
 
-// --------
+// Recursive quick sort, threads spawning function
+void *qs(void *arguments) {
 
-void *qs(void *arguments)
-{
-
-    pthread_t pthread_self(void);
-    pthread_t tid = pthread_self();
-
+    // Data to process
     struct qs_args *args = (qs_args *)arguments;
     int first = args->first;
     int last = args->last;
     int *s_arr = args->s_arr;
 
-    struct qs_args elem[2];
-    pthread_t th[2];
-    int thi[2] = {0};
-    int inter_couter;
+    // Service variables
+    struct qs_args elem[2]; // Arguments to pass to spawned threads
+    pthread_t th[2]; // Threads array
+    int thi[2] = {0}; // Initialized threads flags
+    int inter_couter; // Processed quick sort intervals counter
 
-    if (first < last)
-    {
-        int left = first, right = last, middle = s_arr[(left + right) / 2];
-        // int left = first, right = last, middle = left;
+    // Main routine
+    if (first < last) {
 
-printf("[%d] Start QS\n with first: %d,, middle: %d last: %d\n", tid, first+1, middle+1, last+1);
-for (int i = 0; i < n; i++)
-    {
-        printf("%d ", s_arr[i]);
-    }
-    puts("");
-
-
-        do
-        {
-            while (s_arr[left] < middle)
+        // Quick sort itself
+        int left = first, right = last, pivot = first;
+        do {
+            while (s_arr[left] <= s_arr[pivot] && left < last)
                 left++;
-            while (s_arr[right] > middle)
+            while (s_arr[right] > s_arr[pivot])
                 right--;
-            if (left <= right)
-            {
+            if (left < right) {
                 int tmp = s_arr[left];
                 s_arr[left] = s_arr[right];
                 s_arr[right] = tmp;
-                left++;
-                right--;
             }
+        } while (left < right);
 
-        
-        } while (left <= right);
+        int tmp = s_arr[pivot];
+        s_arr[pivot] = s_arr[right];
+        s_arr[right] = tmp;
 
+        // Create argument structures for additional threads
         elem[0].s_arr = s_arr;
         elem[0].first = first;
-        elem[0].last = right;
+        elem[0].last = right-1;
         elem[1].s_arr = s_arr;
         elem[1].first = left;
         elem[1].last = last;
 
-
-
-        printf("[%d] Lock mutex\n", tid);
+        // Check if we can spawn more threads and run QS for left and right intervals
         pthread_mutex_lock(&lock);
-        for (inter_couter = 2; (inter_couter > 0) && (thread_counter + 1 < max_threads); inter_couter--)
-        {
-                        thread_counter++;
-            printf("[%d] Spawn thread number %d of %d max\n", tid, thread_counter + 1, max_threads);
+        for (inter_couter = 2; (inter_couter > 0) && (thread_counter + 1 < max_threads); inter_couter--) {
+            thread_counter++;
             pthread_create(&th[inter_couter - 1], NULL, &qs, (void *)&elem[inter_couter - 1]);
-            thi[inter_couter - 1] = 1;
+            thi[inter_couter - 1] = 1; // Mark interval as processed
         }
         pthread_mutex_unlock(&lock);
-        printf("[%d] Unlocked mutex\n", tid);
 
+        // If there are unprocessed intervals - max threads number reached
+        // Preform classic recurse QS in this thread for all intervals left
         for (; inter_couter > 0; inter_couter--)
-        {
-            printf("[%d] No available threads: %d of %d - fall into recurse\n", tid, thread_counter + 1, max_threads);
             qs((void *)&elem[inter_couter - 1]);
-        }
 
+        // Join all spawned threads to let them finish jobs
         for (int i = 0; i < 2; i++)
-        {
             if (thi[i] == 1)
-            {
-                printf("[%d] Join child thread %d\n", tid, i);
                 pthread_join(th[i], NULL);
-            }
-        }
-        printf("[%d] Exit\n", tid);
+
         return NULL;
     }
 }
 
-int main(int argc, char *argv[], char *envp[])
-{
-    srand(time(NULL));   // Initialization, should only be called once.
-    for (int i = 0; i < n; i++)
-    {
-        a[i] = rand() % 100; // Returns a pseudo-random integer between 0 and RAND_MAX.
-    }
+int main(int argc, char *argv[], char *envp[]) {
+
+    srand(time(NULL)); // Random numbers generator initialization
+    
+    for (int i = 0; i < n; i++) // Fill test array with random numbers
+        a[i] = rand() % 1000;
 
     struct qs_args arguments;
     arguments.s_arr = a;
@@ -137,4 +114,6 @@ int main(int argc, char *argv[], char *envp[])
         printf("%d ", a[i]);
     }
     puts("");
+
+    return 0;
 }
